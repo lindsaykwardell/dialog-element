@@ -4,6 +4,7 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (attribute, id, src, style, title)
 import Html.Events exposing (..)
+import Json.Decode as Decode
 
 
 main : Program () Model Msg
@@ -37,7 +38,7 @@ view model =
     div [ id "content" ]
         [ img [ src "/logo.png", style "width" "300px" ] []
         , button [ onClick ToggleModal ] [ text "Toggle Modal" ]
-        , dialog [ dialogIsOpen model.dialogIsOpen ]
+        , dialog [ dialogIsOpen model.dialogIsOpen, onClose ToggleModal ]
             [ div [ attribute "slot" "content" ]
                 [ text "I'm here!"
                 , input [] []
@@ -58,3 +59,8 @@ dialogIsOpen isOpen =
 
     else
         attribute "open" "false"
+
+
+onClose : Msg -> Attribute Msg
+onClose msg =
+    on "close" (Decode.succeed msg)

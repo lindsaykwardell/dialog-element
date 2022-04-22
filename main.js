@@ -5,6 +5,7 @@ const root = document.querySelector("#app div");
 const app = Elm.Main.init({ node: root });
 
 class DialogWrapper extends HTMLElement {
+  CloseDialog = new CustomEvent("close");
   dialog;
 
   static get observedAttributes() {
@@ -12,7 +13,6 @@ class DialogWrapper extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    console.log(name, oldValue, newValue);
     switch (name) {
       case "open":
         let isOpen = newValue === "true";
@@ -27,18 +27,29 @@ class DialogWrapper extends HTMLElement {
   constructor() {
     super();
     const template = document.createElement("template");
-    const slot = document.createElement("slot");
-    const dialog = document.createElement("dialog");
-    slot.name = "content";
-    dialog.appendChild(slot);
-    template.appendChild(dialog);
+    template.innerHTML = `
+      <dialog>
+        <slot name="content"></slot>
+      </dialog>`;
 
     this.attachShadow({ mode: "open" });
     this.shadowRoot.appendChild(template.content.cloneNode(true));
 
-    console.log(this.shadowRoot.innerHTML)
+    console.log(this.shadowRoot.innerHTML);
 
     this.dialog = this.shadowRoot.querySelector("dialog");
+  }
+
+  connectedCallback() {
+    this.dialog.addEventListener("close", () => {
+      this.dispatchEvent(this.CloseDialog);
+    });
+  }
+
+  disconnectedCallback() {
+    this.dialog.removeEventListener("close", () => {
+      this.dispatchEvent(this.CloseDialog);
+    });
   }
 }
 
